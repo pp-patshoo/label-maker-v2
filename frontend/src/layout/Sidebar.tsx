@@ -2,7 +2,8 @@ import { NavLink } from 'react-router-dom'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import LanguageToggle from '../components/LanguageToggle'
 import { useT } from '../i18n/I18nContext'
-import { modules } from '../modules/registry'
+import { useAuth } from '../auth/AuthContext'
+import { modulesFor } from '../modules/registry'
 import type { ModuleDef } from '../modules/registry'
 import UserMenu from './UserMenu'
 import styles from './Sidebar.module.css'
@@ -12,11 +13,12 @@ interface SidebarProps {
   onToggleCollapsed: () => void
 }
 
-const topModules = modules.filter((m) => m.position !== 'bottom')
-const bottomModules = modules.filter((m) => m.position === 'bottom')
-
 export default function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const { t } = useT()
+  const { user } = useAuth()
+  const visible = modulesFor(user?.role)
+  const topModules = visible.filter((m) => m.position !== 'bottom')
+  const bottomModules = visible.filter((m) => m.position === 'bottom')
   const toggleLabel = collapsed ? t('sidebar.expand') : t('sidebar.collapse')
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
 

@@ -19,10 +19,18 @@ function readStoredLang(): Lang {
   return 'th'
 }
 
+type Vars = Record<string, string | number>
+
 interface I18nValue {
   lang: Lang
   setLang: (lang: Lang) => void
-  t: (key: TranslationKey) => string
+  /** Translate a key; `{name}` placeholders are replaced from `vars`. */
+  t: (key: TranslationKey, vars?: Vars) => string
+}
+
+function interpolate(text: string, vars?: Vars): string {
+  if (!vars) return text
+  return text.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m))
 }
 
 const I18nContext = createContext<I18nValue | null>(null)
@@ -44,7 +52,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<I18nValue>(
-    () => ({ lang, setLang, t: (key) => dictionaries[lang][key] ?? key }),
+    () => ({ lang, setLang, t: (key, vars) => interpolate(dictionaries[lang][key] ?? key, vars) }),
     [lang, setLang],
   )
 

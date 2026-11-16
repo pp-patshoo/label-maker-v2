@@ -5,9 +5,10 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // เปิดเมื่อมี backend เพื่อให้โค้ดเรียก /api/... ได้เหมือนกันทั้ง dev และ prod
-    // proxy: {
-    //   '/api': { target: 'http://localhost:3000', changeOrigin: true },
-    // },
+    // Dev: forward /api to the backend running on the host (cd backend && npm run dev),
+    // so the code calls /api/... the same way in dev and in production (nginx).
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: false },
+    },
   },
 })

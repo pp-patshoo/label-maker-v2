@@ -50,7 +50,7 @@
   background: var(--bg-sidebar);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px #00000066;
+  box-shadow: 0 4px 16px var(--shadow);
 }
 
 .root[data-collapsed='true'] .menu {

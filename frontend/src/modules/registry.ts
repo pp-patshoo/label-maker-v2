@@ -1,7 +1,8 @@
 import { lazy } from 'react'
 import type { ComponentType, LazyExoticComponent } from 'react'
-import { House, Settings, Tag } from 'lucide-react'
+import { House, Settings, Tag, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { Role } from '../auth/authService'
 import type { TranslationKey } from '../i18n/en'
 
 export interface ModuleDef {
@@ -12,6 +13,8 @@ export interface ModuleDef {
   component: LazyExoticComponent<ComponentType>
   /** 'bottom' pins the item to the bottom of the sidebar (e.g. Settings). */
   position?: 'top' | 'bottom'
+  /** Only users with this role see the menu item and can open the page. */
+  requiredRole?: Role
 }
 
 /**
@@ -35,6 +38,15 @@ export const modules: ModuleDef[] = [
     component: lazy(() => import('./sample/SamplePage')),
   },
   {
+    id: 'users',
+    path: '/users',
+    labelKey: 'menu.users',
+    icon: Users,
+    component: lazy(() => import('./users/UsersPage')),
+    position: 'bottom',
+    requiredRole: 'admin',
+  },
+  {
     id: 'settings',
     path: '/settings',
     labelKey: 'menu.settings',
@@ -43,3 +55,8 @@ export const modules: ModuleDef[] = [
     position: 'bottom',
   },
 ]
+
+/** Modules the given role may see. */
+export function modulesFor(role: Role | undefined): ModuleDef[] {
+  return modules.filter((m) => !m.requiredRole || m.requiredRole === role)
+}

@@ -1,66 +1,45 @@
 /**
- * Auth service: the ONLY file to change when the real backend is ready.
- *
- * ⚠️ MOCK IMPLEMENTATION, DO NOT USE IN PRODUCTION ⚠️
- * Any non-empty username/password is accepted and the "session" lives in sessionStorage.
- * Real implementation (planned): the backend verifies credentials and sets an httpOnly cookie,
- * so the frontend never stores tokens itself:
- *   login           -> POST /api/auth/login   { username, password }   (credentials: 'include')
- *   logout          -> POST /api/auth/logout                           (credentials: 'include')
- *   getCurrentUser  -> GET  /api/auth/me      -> 200 User | 401        (credentials: 'include')
+ * Auth API (backend: /api/auth/*). The session lives in an httpOnly cookie set by the backend,
+ * so the frontend never sees or stores a token.
  */
+import { ApiError, apiFetch } from '../api/client'
+
+export type Role = 'admin' | 'user'
 
 export interface User {
   id: string
   username: string
   displayName: string
+  role: Role
+  /** True while the user still has a temporary password set by an admin. */
+  mustChangePassword: boolean
 }
 
-export class AuthError extends Error {
-  readonly code: 'required' | 'failed'
-  constructor(code: 'required' | 'failed') {
-    super(`auth:${code}`)
-    this.code = code
-  }
+export function login(username: string, password: string): Promise<User> {
+  return apiFetch<User>('/auth/login', {
+    method: 'POST',
+    body: { username, password },
+    skipUnauthorizedHandler: true,
+  })
 }
 
-const MOCK_STORAGE_KEY = 'mock-auth-user'
-const MOCK_DELAY_MS = 300
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-export async function login(username: string, password: string): Promise<User> {
-  const name = username.trim()
-  if (!name || !password) throw new AuthError('required')
-
-  await delay(MOCK_DELAY_MS)
-  // Mock: username "error" simulates a rejected login so the error UI can be tested.
-  if (name.toLowerCase() === 'error') throw new AuthError('failed')
-
-  const user: User = { id: `mock-${name}`, username: name, displayName: name }
-  try {
-    sessionStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(user))
-  } catch {
-    /* storage unavailable: session lasts until reload */
-  }
-  return user
+export function logout(): Promise<void> {
+  return apiFetch<void>('/auth/logout', { method: 'POST', skipUnauthorizedHandler: true })
 }
 
-export async function logout(): Promise<void> {
-  await delay(100)
-  try {
-    sessionStorage.removeItem(MOCK_STORAGE_KEY)
-  } catch {
-    /* storage unavailable */
-  }
-}
-
+/** The signed-in user, or null when there is no valid session. */
 export async function getCurrentUser(): Promise<User | null> {
-  await delay(150)
   try {
-    const raw = sessionStorage.getItem(MOCK_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as User) : null
-  } catch {
-    return null
+    return await apiFetch<User>('/auth/me', { skipUnauthorizedHandler: true })
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null
+    throw err
   }
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<User> {
+  return apiFetch<User>('/auth/change-password', {
+    method: 'POST',
+    body: { currentPassword, newPassword },
+  })
 }

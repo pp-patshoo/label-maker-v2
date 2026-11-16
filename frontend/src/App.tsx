@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import ChangePasswordPage from './auth/ChangePasswordPage'
 import LoginPage from './auth/LoginPage'
 import RequireAuth from './auth/RequireAuth'
 import AppLayout from './layout/AppLayout'
@@ -10,6 +11,16 @@ export default function App() {
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
 
+      {/* Signed in with a temporary password */}
+      <Route
+        path="/change-password"
+        element={
+          <RequireAuth allowPasswordChange>
+            <ChangePasswordPage />
+          </RequireAuth>
+        }
+      />
+
       {/* Protected: everything with the sidebar */}
       <Route
         element={
@@ -18,8 +29,20 @@ export default function App() {
           </RequireAuth>
         }
       >
-        {modules.map(({ id, path, component: Page }) => (
-          <Route key={id} path={path} element={<Page />} />
+        {modules.map(({ id, path, component: Page, requiredRole }) => (
+          <Route
+            key={id}
+            path={path}
+            element={
+              requiredRole ? (
+                <RequireAuth requiredRole={requiredRole}>
+                  <Page />
+                </RequireAuth>
+              ) : (
+                <Page />
+              )
+            }
+          />
         ))}
       </Route>
 

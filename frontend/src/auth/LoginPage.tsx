@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { errorKey, errorVars } from '../api/client'
 import LanguageToggle from '../components/LanguageToggle'
 import LoadingScreen from '../components/LoadingScreen'
 import { useT } from '../i18n/I18nContext'
 import type { TranslationKey } from '../i18n/en'
 import { useAuth } from './AuthContext'
-import { AuthError } from './authService'
 import styles from './LoginPage.module.css'
 
 /** Only allow same-app relative paths, to avoid open redirects like ?redirect=//evil.com */
@@ -17,9 +17,14 @@ function safeRedirect(value: string | null): string {
   return '/'
 }
 
+interface LoginError {
+  key: TranslationKey
+  vars?: Record<string, number>
+}
+
 export default function LoginPage() {
   const { t } = useT()
-  const { status, login } = useAuth()
+  const { status, login, sessionExpired } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const redirectTo = safeRedirect(params.get('redirect'))
@@ -28,7 +33,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   // Store the key (not the text) so the message follows language switches.
-  const [errorKey, setErrorKey] = useState<TranslationKey | null>(null)
+  const [error, setError] = useState<LoginError | null>(null)
 
   if (status === 'loading') return <LoadingScreen />
   if (status === 'authenticated' && !submitting) return <Navigate to={redirectTo} replace />
@@ -36,20 +41,18 @@ export default function LoginPage() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!username.trim() || !password) {
-      setErrorKey('login.error.required')
+      setError({ key: 'error.required' })
       return
     }
     setSubmitting(true)
-    setErrorKey(null)
+    setError(null)
     try {
       await login(username, password)
+      // RequireAuth sends users with a temporary password to /change-password.
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      setErrorKey(
-        err instanceof AuthError && err.code === 'required'
-          ? 'login.error.required'
-          : 'login.error.failed',
-      )
+      setError({ key: errorKey(err), vars: errorVars(err) })
+      setPassword('')
       setSubmitting(false)
     }
   }
@@ -67,6 +70,8 @@ export default function LoginPage() {
           <p className={styles.subtitle}>{t('login.subtitle')}</p>
         </div>
 
+        {sessionExpired && !error && <div className={styles.notice}>{t('login.sessionExpired')}</div>}
+
         <label className={styles.field}>
           <span className={styles.label}>{t('login.username')}</span>
           <input
@@ -78,7 +83,7 @@ export default function LoginPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             disabled={submitting}
-            aria-invalid={errorKey !== null}
+            aria-invalid={error !== null}
           />
         </label>
 
@@ -92,12 +97,12 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={submitting}
-            aria-invalid={errorKey !== null}
+            aria-invalid={error !== null}
           />
         </label>
 
         <div className={styles.error} role="alert" aria-live="polite">
-          {errorKey ? t(errorKey) : null}
+          {error ? t(error.key, error.vars) : null}
         </div>
 
         <button className={styles.submit} type="submit" disabled={submitting}>

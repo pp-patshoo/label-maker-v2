@@ -29,6 +29,18 @@
 
   --scrollbar: #a8a9aa85;      /* scrollbarSlider.background */
   --error: #f48771;            /* errorForeground */
+  --error-border: #8a3c36;
+
+  /* Status badges */
+  --success: #89d185;          /* charts.green */
+  --success-border: #3a7d4f;
+  --warning: #cca700;          /* editorWarning.foreground */
+  --warning-border: #8a6d2f;
+
+  /* Overlays */
+  --shadow: #00000066;         /* widget.shadow */
+  --shadow-strong: #00000080;
+  --backdrop: #00000099;
 
   /* Sizes */
   --sidebar-w-expanded: 240px;
