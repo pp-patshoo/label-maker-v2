@@ -1,0 +1,27 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+  padding: 24px 32px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg-active);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+}
+
+.placeholder {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--fg-muted);
+}

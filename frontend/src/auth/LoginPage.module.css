@@ -1,0 +1,110 @@
+.screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: var(--bg-main);
+}
+
+.langCorner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 360px;
+  padding: 28px 28px 24px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.appName {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg-active);
+}
+
+.subtitle {
+  color: var(--fg-muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  color: var(--fg);
+}
+
+.input {
+  height: 30px;
+  padding: 0 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  color: var(--fg-active);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--focus);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.input:disabled {
+  opacity: 0.6;
+}
+
+.error {
+  min-height: 20px;
+  color: var(--error);
+}
+
+.submit {
+  height: 30px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 500;
+  transition: background var(--transition);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.submit:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}

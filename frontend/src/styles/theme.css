@@ -1,0 +1,41 @@
+/*
+ * Theme tokens based on VS Code "2026 Dark"
+ * (resources/app/extensions/theme-defaults/themes/2026-dark.json)
+ * To add a light theme later, define the same variables under :root[data-theme="light"].
+ */
+:root {
+  color-scheme: dark;
+
+  --bg-main: #121314;          /* editor.background */
+  --bg-sidebar: #191a1b;       /* sideBar.background */
+  --border: #2a2b2c;           /* sideBar.border / panel.border */
+
+  --fg: #bfbfbf;               /* foreground */
+  --fg-muted: #8c8c8c;         /* descriptionForeground */
+  --fg-active: #ededed;        /* list.activeSelectionForeground */
+
+  --hover: #ffffff14;          /* list.hoverBackground */
+  --selected: #ffffff22;       /* list.activeSelectionBackground */
+  --active-indicator: #bfbfbf; /* activityBar.activeBorder */
+
+  --accent: #297aa0;           /* button.background */
+  --accent-hover: #2b7da3;     /* button.hoverBackground */
+  --accent-fg: #ffffff;        /* button.foreground */
+  --focus: #3994bcb3;          /* focusBorder */
+  --link: #48a0c7;             /* textLink.foreground */
+
+  --input-bg: #191a1b;         /* input.background */
+  --input-border: #333536;     /* input.border */
+
+  --scrollbar: #a8a9aa85;      /* scrollbarSlider.background */
+  --error: #f48771;            /* errorForeground */
+
+  /* Sizes */
+  --sidebar-w-expanded: 240px;
+  --sidebar-w-collapsed: 64px;
+  --radius: 4px;
+  --transition: 120ms ease;
+
+  --font-ui: "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+  --font-size: 13px;
+}

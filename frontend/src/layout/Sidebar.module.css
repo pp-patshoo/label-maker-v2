@@ -1,0 +1,146 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  /* visible so the account popover can extend past the sidebar when collapsed */
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+/* Header: app name + collapse button */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 44px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar[data-collapsed='true'] .header {
+  justify-content: center;
+  padding: 0;
+}
+
+.appName {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg-muted);
+  transition: background var(--transition), color var(--transition);
+}
+
+.iconButton:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+/* Navigation */
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0 8px;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  color: var(--fg-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition);
+}
+
+.sidebar[data-collapsed='true'] .item {
+  justify-content: center;
+  padding: 0;
+}
+
+.item:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+.active,
+.active:hover {
+  background: var(--selected);
+  color: var(--fg-active);
+}
+
+/* VS Code-style active indicator on the left edge */
+.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--active-indicator);
+}
+
+.icon {
+  flex: none;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Footer: language + user */
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.lang {
+  display: flex;
+  padding: 2px 2px 4px;
+}
+
+.sidebar[data-collapsed='true'] .lang {
+  justify-content: center;
+  padding: 2px 0 4px;
+}

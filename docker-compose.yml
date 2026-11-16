@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "${APP_PORT:-8080}:80"
+    restart: unless-stopped
+
+  # backend:            # add later; nginx.conf already has a commented /api/ proxy to backend:3000
+  #   build: ./backend
+  #   restart: unless-stopped

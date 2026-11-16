@@ -1,0 +1,90 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.root[data-collapsed='true'] .trigger {
+  justify-content: center;
+  padding: 0;
+}
+
+.trigger:hover,
+.trigger[aria-expanded='true'] {
+  background: var(--hover);
+}
+
+.icon {
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Popover: above the trigger when expanded, to the right when collapsed */
+.menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px #00000066;
+}
+
+.root[data-collapsed='true'] .menu {
+  bottom: 0;
+  left: calc(100% + 8px);
+  right: auto;
+}
+
+.menuHeader {
+  padding: 6px 8px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: var(--selected);
+  color: var(--fg-active);
+}
