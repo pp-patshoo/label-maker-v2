@@ -10,6 +10,8 @@
 - ตรวจ frontend: `cd frontend && npm run build && npm run lint`
 - ตรวจ backend: `cd backend && npx tsc --noEmit && npm test` (ต้องเปิด DB ของ dev ไว้; เทสต์ใช้ DB `labelmaker_test`)
   - บน Windows ให้รัน `npm test` จาก PowerShell ถ้ารันจาก Git Bash จะเจอ "Vitest failed to find the runner"
+- ตรวจหน้าเว็บ (E2E): `cd e2e && npm test` (Playwright + Edge, เปิด backend :3901 + Vite :5174 เอง, DB `labelmaker_e2e` สร้างใหม่ทุกครั้ง; ต้องเปิด DB ของ dev ไว้; รันจาก PowerShell)
+  - แก้หน้าเว็บหรือ flow เมื่อไหร่ ให้แก้/เพิ่มเทสต์ใน `e2e/tests/` ด้วย และหาปุ่ม/ข้อความผ่าน `t()` กับ `field()` ใน fixtures.ts ห้าม hard-code ข้อความ
 - Docker ทั้งระบบ: `docker compose up -d --build` (พอร์ต 8080)
 - แก้ schema แล้ว: `cd backend && npm run db:generate` (ได้ไฟล์ใน backend/drizzle/ ต้อง commit) โดย migration จะรันเองตอน backend เริ่ม
 

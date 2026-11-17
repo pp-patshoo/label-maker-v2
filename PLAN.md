@@ -70,6 +70,13 @@
 - เพิ่ม reason `cli_reset` ใน login_events (success=false จึงไม่นับเป็นเข้าระบบล่าสุด) หน้าเว็บแสดงเป็น badge สีเหลือง
 - **ผลทดสอบ**: backend 35 เทสต์ผ่าน (เพิ่ม `resetAdmin.test.ts` 5 ข้อ), รันตัวที่ build แล้วกับ DB `labelmaker_test` ถูกต้องทั้งกรณีสำเร็จและ error, รันใน container แสดงรายชื่อ admin ได้ (ยังไม่ได้รีเซ็ตรหัส admin จริง)
 
+**รอบ 5: E2E test ใน repo** (merge เข้า `main` แล้ว)
+- แพ็กเกจแยก `e2e/` (Playwright + Edge ผ่าน `channel: 'msedge'`) รันด้วย `cd e2e && npm test`
+- แยกอิสระจากข้อมูลจริง: `scripts/start-backend.mjs` สร้าง DB `labelmaker_e2e` ใหม่แล้วเปิด backend :3901 ส่วน Vite :5174 proxy ไป backend นั้นผ่าน `API_PROXY_TARGET` (แก้ `frontend/vite.config.ts` จุดเดียว) project `setup` เปลี่ยนรหัสชั่วคราวของ admin แล้วเก็บ session ไว้ใน `.auth/admin.json`
+- `tests/fixtures.ts`: `t()` อ่านคำแปลจาก `en.ts`, `field()` หา input จากชื่อ label แบบตรงตัว, `AdminApi.createUser()` สร้างผู้ใช้ชื่อไม่ซ้ำผ่าน API ให้ทุกเทสต์ไม่พึ่งกัน
+- 25 เทสต์ (รวม setup): ล็อกอิน/ออก/ล็อกบัญชี/รหัสชั่วคราว/session ถูกยกเลิก, จัดการผู้ใช้ครบทุกปุ่ม + ประวัติ + pager, สิทธิ์ตาม role + เปลี่ยนรหัสในตั้งค่า, sidebar/ภาษา/เมนู/ไม่มี console error
+- **ผลทดสอบ**: ผ่านครบ 25 ข้อ 2 รอบติดกัน (~1.1 นาที), DB `labelmaker` จริงไม่เปลี่ยน (นับผู้ใช้/ประวัติก่อนและหลัง), ลองเปลี่ยนป้ายปุ่มโดยตั้งใจแล้วเทสต์ fail พร้อม screenshot/trace
+
 ## 4. โครงสร้างไฟล์
 
 ```
@@ -78,6 +85,8 @@ label-maker/
   compose.dev.yml           เปิด db ที่ 127.0.0.1:5432 สำหรับ dev
   .env.example              ค่าตั้งต้นของ compose (รหัส DB, admin คนแรก, APP_ORIGIN, COOKIE_SECURE)
   README.md / PLAN.md / Claude.md
+  e2e/                      Playwright + Edge: playwright.config.ts, scripts/start-backend.mjs (DB labelmaker_e2e),
+                            tests/ (fixtures, global.setup, auth/users/access/layout .spec.ts)
   backend/
     Dockerfile              node:24-alpine multi-stage, รันด้วย user node, มี HEALTHCHECK
     .env.example            ค่าสำหรับ dev บนเครื่อง
@@ -158,14 +167,14 @@ label-maker/
 - **ใช้ใน LAN ผ่าน IP แบบ HTTP ได้** แต่รหัสผ่าน/cookie ไม่ได้เข้ารหัสระหว่างทาง ถ้า `APP_ORIGIN` ไม่ตรงกับ URL ในเบราว์เซอร์จะได้ 403 `bad_origin` และ Docker เปิดพอร์ตโดยข้ามกฎ ufw จึงควรตั้ง `APP_BIND`
 - **ทดสอบ backend บน Windows** ให้รันจาก PowerShell เพราะ Git Bash ทำให้ vitest error "failed to find the runner" (ตัวอักษรไดรฟ์ไม่ตรงกัน)
 - **lint ของ frontend** มี warning 2 ข้อ: `only-export-components` (ไฟล์ context ส่งออกทั้ง Provider และ hook) ไม่กระทบการทำงาน
-- **E2E test** ยังเป็นสคริปต์ชั่วคราวนอก repo ยังไม่ได้ย้ายเข้าโปรเจกต์
+- **พอร์ตของ E2E** (3901/5174) อาจชนกับช่วงที่ Windows/Hyper-V จองไว้ซึ่งเปลี่ยนได้หลังรีบูต (เคยชน 3100) ถ้าเจอ `listen EACCES` ให้ตั้ง `E2E_BACKEND_PORT`/`E2E_FRONTEND_PORT`
 - **Google Fonts**: ถ้าใช้ในเครือข่ายปิด ต้อง self-host ฟอนต์ Noto Sans Thai
 - **npm install-scripts**: npm รุ่นนี้บล็อก postinstall ของ esbuild ใน backend ซึ่งไม่กระทบ (tsx/drizzle-kit ใช้งานได้)
 
 ## 9. ขั้นตอนถัดไปที่แนะนำ
 
 1. **(ตามความต้องการของโมดูล) ขยาย API/Routing**: เพิ่ม DELETE/PUT และดาวน์โหลดไฟล์ใน `apiFetch`, รับอัปโหลดไฟล์ใน backend (ตอนนี้ JSON ≤ 64KB), หน้าย่อยในโมดูล (`path/*`) ทำเมื่อโมดูลจริงต้องใช้
-2. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
+2. **unit test ฝั่ง frontend** ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`) และเพิ่ม E2E ทุกครั้งที่ทำหน้าใหม่ของโมดูล Label Maker
 3. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
 4. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
 5. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก

@@ -61,6 +61,19 @@ cd backend && npm test     # สร้าง DB labelmaker_test ใหม่ท�
 ```
 > Windows: ให้รันจาก PowerShell หรือ cmd ถ้ารันจาก Git Bash อาจเจอ "Vitest failed to find the runner" (ตัวอักษรไดรฟ์ `c:`/`C:` ไม่ตรงกัน)
 
+### ทดสอบหน้าเว็บ (E2E)
+```bash
+cd e2e && npm install      # ครั้งแรก
+npm test                   # รันทั้งหมด (~1 นาที)
+npm run test:ui            # โหมดดูทีละขั้น
+npm run report             # เปิดรายงานล่าสุด (มี screenshot/trace ของข้อที่ fail)
+```
+- ใช้ Playwright กับ Microsoft Edge ที่ติดตั้งอยู่ในเครื่อง ไม่ต้องดาวน์โหลดเบราว์เซอร์
+- เทสต์จะเปิด backend (พอร์ต 3901) และ Vite (พอร์ต 5174) ของตัวเอง ใช้ DB `labelmaker_e2e` ที่สร้างใหม่ทุกครั้ง และสร้างบัญชีทดสอบเอง จึงไม่แตะข้อมูลจริงและรันพร้อม dev server ปกติได้
+- ต้องเปิด DB จากขั้นที่ 1 และมี `backend/.env` (หรือตั้ง `E2E_DATABASE_URL`)
+- ถ้าเจอ `listen EACCES` แปลว่า Windows จองพอร์ตไว้ (ดูด้วย `netsh int ipv4 show excludedportrange protocol=tcp`) ให้ตั้ง `E2E_BACKEND_PORT` / `E2E_FRONTEND_PORT` เป็นพอร์ตอื่น
+- ข้อความในเทสต์อ่านจาก `frontend/src/i18n/en.ts` ถ้าแก้คำแปลไม่ต้องแก้เทสต์ แต่ถ้าเปลี่ยนหน้าตาหรือขั้นตอนต้องแก้ใน `e2e/tests/`
+
 ### แก้ไขโครงสร้างฐานข้อมูล
 แก้ `backend/src/db/schema.ts` แล้วรัน `cd backend && npm run db:generate` จากนั้น commit ไฟล์ใหม่ใน `backend/drizzle/` โดย migration จะรันอัตโนมัติตอน backend เริ่ม
 
