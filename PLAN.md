@@ -58,7 +58,7 @@
 - ใช้ได้โดยไม่แก้โค้ด: ตั้ง `APP_ORIGIN=http://<ip>:<port>` และ `COOKIE_SECURE=false` (วิธีตั้งอยู่ใน README หัวข้อ "Deploy บน Linux ใน LAN")
 - เพิ่มตัวแปร `APP_BIND` ใน docker-compose (ค่าเริ่มต้น `0.0.0.0`) เพื่อเปิดพอร์ตเฉพาะ IP ของ LAN
 
-**รอบ 3: UI ใช้ร่วมกัน** (branch `feature/shared-ui` ยังไม่ commit)
+**รอบ 3: UI ใช้ร่วมกัน** (merge เข้า `main` แล้ว ที่ `f51d2c5`)
 - แยกจากโมดูลจัดการผู้ใช้มาไว้ใน `components/`: `Tabs`, `DataTable` (+ `Table.module.css` มีคลาส `muted`/`ellipsis`/`actions` สำหรับ cell), `Badge`/`BadgeList` (tone: neutral/ok/warn/error/accent), `IconButton`, `Toolbar` (มีช่องแสดง error), `Pager` (limit/offset)
 - เพิ่ม `hooks/useApiData` (โหลดข้อมูล + `reload()` + error key, loader ต้องห่อ `useCallback`) และย้าย `useDateFormat` ไปที่ `hooks/`
 - โมดูลผู้ใช้เปลี่ยนมาใช้ของกลางทั้งหมด หน้าตาเหมือนเดิม และ warning `set-state-in-effect` หายไป
@@ -157,15 +157,14 @@ label-maker/
 
 ## 9. ขั้นตอนถัดไปที่แนะนำ
 
-1. **Commit + merge** branch `feature/shared-ui` เข้า `main`
-2. **(ตามความต้องการของโมดูล) ขยาย API/Routing**: เพิ่ม DELETE/PUT และดาวน์โหลดไฟล์ใน `apiFetch`, รับอัปโหลดไฟล์ใน backend (ตอนนี้ JSON ≤ 64KB), หน้าย่อยในโมดูล (`path/*`) ทำเมื่อโมดูลจริงต้องใช้
-3. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
-4. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
-5. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
-6. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
-7. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
-8. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
-9. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
+1. **(ตามความต้องการของโมดูล) ขยาย API/Routing**: เพิ่ม DELETE/PUT และดาวน์โหลดไฟล์ใน `apiFetch`, รับอัปโหลดไฟล์ใน backend (ตอนนี้ JSON ≤ 64KB), หน้าย่อยในโมดูล (`path/*`) ทำเมื่อโมดูลจริงต้องใช้
+2. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
+3. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
+4. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
+5. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
+6. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
+7. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
+8. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
 
 ## 10. คำสั่งที่ใช้บ่อย
 
