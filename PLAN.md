@@ -37,7 +37,7 @@
 **รอบ 1: โครงหน้าเว็บ** (commit `8e4ae72`)
 - Sidebar + พื้นที่โมดูล, module registry, i18n th/en, ธีม 2026 Dark, ล็อกอินแบบ mock, Docker (nginx)
 
-**รอบ 2: ระบบล็อกอินจริง** (branch `feature/real-auth` ยังไม่ commit)
+**รอบ 2: ระบบล็อกอินจริง** (branch `feature/real-auth` commit `99df5cc` และ push ขึ้น GitHub แล้ว ยังไม่ merge เข้า `main`)
 - Backend ใหม่ใน `backend/`: auth, จัดการผู้ใช้, ประวัติการล็อกอิน, migration อัตโนมัติ, สร้าง admin คนแรก
 - PostgreSQL + `compose.dev.yml` และ nginx proxy `/api/` (resolve ชื่อ backend ใหม่ทุก 10 วิ จึงไม่ค้าง IP เก่าเวลา recreate backend)
 - Frontend
@@ -149,7 +149,7 @@ label-maker/
 
 ## 9. ขั้นตอนถัดไปที่แนะนำ
 
-1. **Review + commit** branch `feature/real-auth` แล้ว merge เข้า `main`
+1. **Review แล้ว merge** branch `feature/real-auth` เข้า `main` (commit และ push แล้ว เหลือสร้าง PR + review + merge)
 2. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
 3. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
 4. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
