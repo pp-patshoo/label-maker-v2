@@ -37,7 +37,7 @@
 **รอบ 1: โครงหน้าเว็บ** (commit `8e4ae72`)
 - Sidebar + พื้นที่โมดูล, module registry, i18n th/en, ธีม 2026 Dark, ล็อกอินแบบ mock, Docker (nginx)
 
-**รอบ 2: ระบบล็อกอินจริง** (branch `feature/real-auth` commit `99df5cc` และ push ขึ้น GitHub แล้ว ยังไม่ merge เข้า `main`)
+**รอบ 2: ระบบล็อกอินจริง** (merge เข้า `main` แบบ fast-forward แล้ว ที่ `fddf4ae` ไม่ได้ทำ PR เพราะเครื่องไม่มี `gh`)
 - Backend ใหม่ใน `backend/`: auth, จัดการผู้ใช้, ประวัติการล็อกอิน, migration อัตโนมัติ, สร้าง admin คนแรก
 - PostgreSQL + `compose.dev.yml` และ nginx proxy `/api/` (resolve ชื่อ backend ใหม่ทุก 10 วิ จึงไม่ค้าง IP เก่าเวลา recreate backend)
 - Frontend
@@ -57,6 +57,12 @@
 **ตรวจการ deploy ใน LAN ผ่าน Static IP** (ไม่ใช้ DNS/Let's Encrypt)
 - ใช้ได้โดยไม่แก้โค้ด: ตั้ง `APP_ORIGIN=http://<ip>:<port>` และ `COOKIE_SECURE=false` (วิธีตั้งอยู่ใน README หัวข้อ "Deploy บน Linux ใน LAN")
 - เพิ่มตัวแปร `APP_BIND` ใน docker-compose (ค่าเริ่มต้น `0.0.0.0`) เพื่อเปิดพอร์ตเฉพาะ IP ของ LAN
+
+**รอบ 3: UI ใช้ร่วมกัน** (branch `feature/shared-ui` ยังไม่ commit)
+- แยกจากโมดูลจัดการผู้ใช้มาไว้ใน `components/`: `Tabs`, `DataTable` (+ `Table.module.css` มีคลาส `muted`/`ellipsis`/`actions` สำหรับ cell), `Badge`/`BadgeList` (tone: neutral/ok/warn/error/accent), `IconButton`, `Toolbar` (มีช่องแสดง error), `Pager` (limit/offset)
+- เพิ่ม `hooks/useApiData` (โหลดข้อมูล + `reload()` + error key, loader ต้องห่อ `useCallback`) และย้าย `useDateFormat` ไปที่ `hooks/`
+- โมดูลผู้ใช้เปลี่ยนมาใช้ของกลางทั้งหมด หน้าตาเหมือนเดิม และ warning `set-state-in-effect` หายไป
+- **ผลทดสอบ**: build ผ่าน, lint เหลือ warning 2 ข้อ, ตรวจด้วย Playwright + Edge (dev server + DB `labelmaker_test`) ว่าแท็บ, ตาราง, badge, refresh, pager และปุ่มปลดล็อกยังทำงาน
 
 ## 4. โครงสร้างไฟล์
 
@@ -93,7 +99,9 @@ label-maker/
         home/ sample/       หน้าเทมเพลตเปล่า
         users/              UsersPage, UsersTab, LoginHistoryTab, UserDialogs, usersApi
         settings/           ข้อมูลบัญชี + เปลี่ยนรหัสผ่าน
-      components/           PageTemplate, LoadingScreen, LanguageToggle, Dialog, Form.module.css
+      components/           PageTemplate, LoadingScreen, LanguageToggle, Dialog, Form.module.css,
+                            Tabs, DataTable (+Table.module.css), Badge, IconButton, Toolbar, Pager
+      hooks/                useApiData, useDateFormat
       i18n/                 I18nContext (t รองรับ {ตัวแปร}), en.ts, th.ts
       styles/               theme.css (tokens), global.css
 ```
@@ -129,7 +137,7 @@ label-maker/
 
 ## 7. วิธีเพิ่มโมดูลใหม่
 
-1. สร้างโฟลเดอร์ `frontend/src/modules/<ชื่อ>/` และคอมโพเนนต์หน้าแบบ `export default` (ใช้ `PageTemplate` เป็นฐาน)
+1. สร้างโฟลเดอร์ `frontend/src/modules/<ชื่อ>/` และคอมโพเนนต์หน้าแบบ `export default` (ใช้ `PageTemplate` เป็นฐาน ส่วนหน้ารายการให้ใช้ `Toolbar` + `DataTable` + `Pager` และโหลดข้อมูลด้วย `useApiData`)
 2. เพิ่ม 1 รายการใน [registry.ts](frontend/src/modules/registry.ts) และใส่ `requiredRole: 'admin'` ถ้าจำกัดสิทธิ์
 3. เพิ่มคำแปลใน [en.ts](frontend/src/i18n/en.ts) และ [th.ts](frontend/src/i18n/th.ts) (ถ้าลืม th, TypeScript จะแจ้ง error)
 4. ถ้าต้องมี API: เพิ่ม route ใน `backend/src/<module>/routes.ts` พร้อม `requireAuth()`/`requireAdmin()` แล้ว register ใน `app.ts` ฝั่งหน้าเว็บเรียกผ่าน `apiFetch`
@@ -142,21 +150,22 @@ label-maker/
 - **ไม่มี HTTPS** ใน container ถ้า deploy จริงต้องมี TLS ด้านหน้า แล้วตั้ง `COOKIE_SECURE=true` และ `APP_ORIGIN` ให้ตรง
 - **ใช้ใน LAN ผ่าน IP แบบ HTTP ได้** แต่รหัสผ่าน/cookie ไม่ได้เข้ารหัสระหว่างทาง ถ้า `APP_ORIGIN` ไม่ตรงกับ URL ในเบราว์เซอร์จะได้ 403 `bad_origin` และ Docker เปิดพอร์ตโดยข้ามกฎ ufw จึงควรตั้ง `APP_BIND`
 - **ทดสอบ backend บน Windows** ให้รันจาก PowerShell เพราะ Git Bash ทำให้ vitest error "failed to find the runner" (ตัวอักษรไดรฟ์ไม่ตรงกัน)
-- **lint ของ frontend** มี warning 4 ข้อ: `only-export-components` 2 ข้อ (ไฟล์ context ส่งออกทั้ง Provider และ hook) และ `set-state-in-effect` 2 ข้อ (โหลดข้อมูลใน useEffect ของ UsersTab/LoginHistoryTab) ไม่กระทบการทำงาน
+- **lint ของ frontend** มี warning 2 ข้อ: `only-export-components` (ไฟล์ context ส่งออกทั้ง Provider และ hook) ไม่กระทบการทำงาน
 - **E2E test** ยังเป็นสคริปต์ชั่วคราวนอก repo ยังไม่ได้ย้ายเข้าโปรเจกต์
 - **Google Fonts**: ถ้าใช้ในเครือข่ายปิด ต้อง self-host ฟอนต์ Noto Sans Thai
 - **npm install-scripts**: npm รุ่นนี้บล็อก postinstall ของ esbuild ใน backend ซึ่งไม่กระทบ (tsx/drizzle-kit ใช้งานได้)
 
 ## 9. ขั้นตอนถัดไปที่แนะนำ
 
-1. **Review แล้ว merge** branch `feature/real-auth` เข้า `main` (commit และ push แล้ว เหลือสร้าง PR + review + merge)
-2. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
-3. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
-4. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
-5. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
-6. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
-7. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
-8. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
+1. **Commit + merge** branch `feature/shared-ui` เข้า `main`
+2. **(ตามความต้องการของโมดูล) ขยาย API/Routing**: เพิ่ม DELETE/PUT และดาวน์โหลดไฟล์ใน `apiFetch`, รับอัปโหลดไฟล์ใน backend (ตอนนี้ JSON ≤ 64KB), หน้าย่อยในโมดูล (`path/*`) ทำเมื่อโมดูลจริงต้องใช้
+3. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
+4. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
+5. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
+6. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
+7. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
+8. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
+9. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
 
 ## 10. คำสั่งที่ใช้บ่อย
 

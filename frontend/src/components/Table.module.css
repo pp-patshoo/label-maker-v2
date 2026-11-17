@@ -1,0 +1,58 @@
+.wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 7px 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-sidebar);
+  color: var(--fg-muted);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--hover);
+}
+
+.table td.emptyRow {
+  text-align: center;
+  color: var(--fg-muted);
+  padding: 24px;
+}
+
+/* Cell helpers for use inside DataTable's renderRow */
+.muted {
+  color: var(--fg-muted);
+}
+
+.ellipsis {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: flex;
+  gap: 2px;
+}

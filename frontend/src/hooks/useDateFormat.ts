@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useT } from '../../i18n/I18nContext'
+import { useT } from '../i18n/I18nContext'
 
 /** Date-time formatter that follows the UI language (Thai uses the Buddhist calendar). */
 export function useDateFormat() {

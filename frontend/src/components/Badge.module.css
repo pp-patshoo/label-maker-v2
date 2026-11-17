@@ -1,0 +1,35 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--fg);
+}
+
+.ok {
+  border-color: var(--success-border);
+  color: var(--success);
+}
+
+.warn {
+  border-color: var(--warning-border);
+  color: var(--warning);
+}
+
+.error {
+  border-color: var(--error-border);
+  color: var(--error);
+}
+
+.accent {
+  border-color: var(--accent);
+  color: var(--link);
+}

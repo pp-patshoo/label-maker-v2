@@ -1,0 +1,21 @@
+.button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg-muted);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--selected);
+  color: var(--fg-active);
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
