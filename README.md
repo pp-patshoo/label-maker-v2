@@ -78,6 +78,18 @@ cd backend && npm test     # สร้าง DB labelmaker_test ใหม่ท�
 - บันทึกประวัติการล็อกอินทุกครั้ง (ดูได้ที่เมนูจัดการผู้ใช้)
 - **ถ้าเปิดใช้ผ่าน HTTPS** ให้ตั้ง `COOKIE_SECURE=true` และแก้ `APP_ORIGIN` ให้ตรงกับ URL จริง
 
+## ลืมรหัส admin
+รหัสใน `.env` ใช้แค่ตอนสร้าง admin คนแรก ถ้าลืมรหัส admin ทุกคน ให้รันบนเซิร์ฟเวอร์:
+```bash
+docker compose exec backend node dist/cli/reset-admin.js              # ดูรายชื่อ admin ที่ใช้งานอยู่
+docker compose exec backend node dist/cli/reset-admin.js <username>   # รีเซ็ต
+cd backend && npm run reset-admin -- <username>                      # ตอน dev
+```
+- คำสั่งจะสุ่มรหัสชั่วคราวและแสดงให้เห็นครั้งเดียว ล็อกอินแล้วต้องตั้งรหัสใหม่
+- ปลดล็อกบัญชีและยกเลิก session เดิมทั้งหมด
+- บันทึกไว้ในประวัติการล็อกอินว่า "รีเซ็ตรหัสจากเซิร์ฟเวอร์"
+- ใช้ได้เฉพาะ admin ที่ยังเปิดใช้งานอยู่
+
 ## สำรองข้อมูล
 ```bash
 docker compose exec -T db pg_dump -U labelmaker labelmaker > backup.sql

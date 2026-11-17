@@ -2,7 +2,8 @@ import { count, desc, eq } from 'drizzle-orm'
 import type { Db } from '../db/client.js'
 import { loginEvents, users } from '../db/schema.js'
 
-export type LoginReason = 'ok' | 'invalid' | 'locked' | 'inactive' | 'rate_limited'
+/** cli_reset = password reset with the reset-admin command on the server (not a login attempt). */
+export type LoginReason = 'ok' | 'invalid' | 'locked' | 'inactive' | 'rate_limited' | 'cli_reset'
 
 export interface LoginEventInput {
   userId: string | null

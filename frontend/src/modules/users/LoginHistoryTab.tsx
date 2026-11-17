@@ -42,7 +42,9 @@ export default function LoginHistoryTab() {
               {e.displayName && <span className={table.muted}> ({e.displayName})</span>}
             </td>
             <td>
-              <Badge tone={e.success ? 'ok' : 'error'}>{t(`history.reason.${e.reason}`)}</Badge>
+              <Badge tone={e.success ? 'ok' : e.reason === 'cli_reset' ? 'warn' : 'error'}>
+                {t(`history.reason.${e.reason}`)}
+              </Badge>
             </td>
             <td className={table.muted}>{e.ip ?? '—'}</td>
             <td className={`${table.muted} ${table.ellipsis}`} title={e.userAgent ?? ''}>

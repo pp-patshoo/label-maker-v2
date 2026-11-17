@@ -92,6 +92,7 @@ export const th: Dictionary = {
   'history.reason.locked': 'บัญชีถูกล็อก',
   'history.reason.inactive': 'บัญชีถูกปิดใช้งาน',
   'history.reason.rate_limited': 'พยายามบ่อยเกินไป (IP)',
+  'history.reason.cli_reset': 'รีเซ็ตรหัสจากเซิร์ฟเวอร์',
   'history.range': '{from}–{to} จาก {total}',
   'history.empty': 'ยังไม่มีประวัติการเข้าสู่ระบบ',
 

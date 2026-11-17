@@ -9,6 +9,7 @@ import type { Db } from '../db/client.js'
 import { users } from '../db/schema.js'
 import type { UserRow } from '../db/schema.js'
 import { HttpError, parse } from '../errors.js'
+import { setTemporaryPassword } from './passwordReset.js'
 
 const USERNAME_RE = /^[a-z0-9._-]{3,32}$/
 
@@ -127,21 +128,8 @@ export async function userRoutes(app: FastifyInstance, opts: { db: Db }) {
     const issue = validatePassword(body.tempPassword, target.username)
     if (issue) throw new HttpError(400, issue)
 
-    const now = new Date()
-    const [updated] = await db
-      .update(users)
-      .set({
-        passwordHash: await hashPassword(body.tempPassword),
-        mustChangePassword: true,
-        failedAttempts: 0,
-        lockedUntil: null,
-        passwordChangedAt: now,
-        updatedAt: now,
-      })
-      .where(eq(users.id, id))
-      .returning()
-
-    await revokeUserSessions(db, id)
+    const updated = await setTemporaryPassword(db, id, body.tempPassword)
+    if (!updated) throw new HttpError(404, 'not_found')
     return toAdminUser(updated)
   })
 

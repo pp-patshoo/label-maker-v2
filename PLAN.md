@@ -64,6 +64,12 @@
 - โมดูลผู้ใช้เปลี่ยนมาใช้ของกลางทั้งหมด หน้าตาเหมือนเดิม และ warning `set-state-in-effect` หายไป
 - **ผลทดสอบ**: build ผ่าน, lint เหลือ warning 2 ข้อ, ตรวจด้วย Playwright + Edge (dev server + DB `labelmaker_test`) ว่าแท็บ, ตาราง, badge, refresh, pager และปุ่มปลดล็อกยังทำงาน
 
+**รอบ 4: คำสั่งกู้คืนรหัส admin** (merge เข้า `main` แล้ว)
+- `backend/src/cli/reset-admin.ts` (entry) + `cli/resetAdmin.ts` (logic): ไม่ใส่ชื่อจะแสดงรายชื่อ admin ที่ใช้งานอยู่ ใส่ชื่อจะสุ่มรหัสชั่วคราว 16 ตัวแล้วแสดงครั้งเดียว ใช้ได้เฉพาะ admin ที่ยังเปิดใช้งาน และใช้แค่ `DATABASE_URL`
+- แยก `users/passwordReset.ts` (`setTemporaryPassword`) ให้ API reset-password และ CLI ใช้ร่วมกัน: ตั้ง mustChangePassword, ปลดล็อก, ยกเลิก session
+- เพิ่ม reason `cli_reset` ใน login_events (success=false จึงไม่นับเป็นเข้าระบบล่าสุด) หน้าเว็บแสดงเป็น badge สีเหลือง
+- **ผลทดสอบ**: backend 35 เทสต์ผ่าน (เพิ่ม `resetAdmin.test.ts` 5 ข้อ), รันตัวที่ build แล้วกับ DB `labelmaker_test` ถูกต้องทั้งกรณีสำเร็จและ error, รันใน container แสดงรายชื่อ admin ได้ (ยังไม่ได้รีเซ็ตรหัส admin จริง)
+
 ## 4. โครงสร้างไฟล์
 
 ```
@@ -83,7 +89,8 @@ label-maker/
       errors.ts             HttpError + parse()
       db/                   client.ts (pool, migrate), schema.ts (users, sessions, login_events)
       auth/                 password.ts, sessions.ts, guards.ts (CSRF + requireAuth/requireAdmin), routes.ts, serialize.ts
-      users/routes.ts       API จัดการผู้ใช้ + login-events
+      users/                routes.ts (API จัดการผู้ใช้ + login-events), passwordReset.ts
+      cli/                  reset-admin.ts (คำสั่งกู้คืนรหัส admin), resetAdmin.ts
       audit/loginEvents.ts  บันทึก/ค้นประวัติ
       bootstrap.ts          สร้าง admin คนแรก
     test/                   vitest: auth.test.ts, users.test.ts (ใช้ DB labelmaker_test)
@@ -144,7 +151,7 @@ label-maker/
 
 ## 8. ข้อจำกัดและเรื่องที่ควรรู้
 
-- **รหัส admin ใน `.env`** ใช้แค่ตอนที่ยังไม่มีผู้ใช้เลย ถ้าลืมรหัส admin ทุกคน ต้องแก้ใน DB เอง เพราะยังไม่มีคำสั่งกู้คืน (ดูขั้นตอนถัดไปข้อ 3)
+- **รหัส admin ใน `.env`** ใช้แค่ตอนที่ยังไม่มีผู้ใช้เลย ถ้าลืมรหัส admin ทุกคนให้ใช้คำสั่ง `reset-admin` (README หัวข้อ "ลืมรหัส admin") ซึ่งใช้ได้กับ admin ที่ยังเปิดใช้งานอยู่เท่านั้น
 - **IP ในประวัติตอนรันบน Docker Desktop (Windows)** จะเป็น IP ของ gateway (เช่น `172.19.0.1`) ไม่ใช่ IP จริง เพราะ Docker Desktop ทำ NAT แต่บนเซิร์ฟเวอร์ Linux จะเห็น IP จริง ถ้ามี reverse proxy อีกชั้นด้านหน้าต้องปรับ nginx ให้ส่งต่อ IP
 - **Rate limit ต่อ IP เก็บใน memory** ของ backend จึงรีเซ็ตเมื่อ restart และถ้า scale backend หลายตัวต้องย้ายไปใช้ store กลาง (เช่น Redis)
 - **ไม่มี HTTPS** ใน container ถ้า deploy จริงต้องมี TLS ด้านหน้า แล้วตั้ง `COOKIE_SECURE=true` และ `APP_ORIGIN` ให้ตรง
@@ -159,12 +166,11 @@ label-maker/
 
 1. **(ตามความต้องการของโมดูล) ขยาย API/Routing**: เพิ่ม DELETE/PUT และดาวน์โหลดไฟล์ใน `apiFetch`, รับอัปโหลดไฟล์ใน backend (ตอนนี้ JSON ≤ 64KB), หน้าย่อยในโมดูล (`path/*`) ทำเมื่อโมดูลจริงต้องใช้
 2. **ย้าย E2E test เข้า repo** (Playwright) และเพิ่ม unit test ฝั่ง frontend ด้วย Vitest (เช่น `safeRedirect`, `checkPassword`, `errorKey`)
-3. **คำสั่งกู้คืน admin** เช่น `docker compose exec backend node dist/cli/reset-admin.js <username>` สำหรับกรณีลืมรหัส admin ทุกคน
-4. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
-5. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
-6. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
-7. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
-8. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
+3. **กำหนดโมดูลจริง**: แทนที่ "โมดูลตัวอย่าง" ด้วยโมดูล Label Maker ตามหัวข้อ 7
+4. **เตรียม deploy จริง** (ถ้าใช้แค่ใน LAN ดู README หัวข้อ "Deploy บน Linux ใน LAN"; ถ้าต้องการ HTTPS โดยไม่ใช้ DNS ให้ใช้ cert จาก internal CA ที่ใส่ IP ใน SAN): HTTPS/reverse proxy, `COOKIE_SECURE=true`, security headers ใน nginx (CSP, X-Content-Type-Options, Referrer-Policy), self-host ฟอนต์, กำหนดการ backup DB อัตโนมัติ
+5. **ตั้ง retention ของ login_events** (เช่น ลบที่เก่ากว่า 1 ปี) ก่อนตารางโตมาก
+6. **(ถ้าต้องการ) ฟีเจอร์ล็อกอินเพิ่ม**: Remember me, แสดง/ยกเลิก session ที่เปิดอยู่ของตัวเอง, MFA
+7. **(ถ้าต้องการ) ธีมสว่าง** ตามแนวทางในหัวข้อ 6
 
 ## 10. คำสั่งที่ใช้บ่อย
 

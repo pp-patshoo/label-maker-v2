@@ -90,6 +90,7 @@ export const en = {
   'history.reason.locked': 'Account locked',
   'history.reason.inactive': 'Account disabled',
   'history.reason.rate_limited': 'Too many attempts (IP)',
+  'history.reason.cli_reset': 'Password reset from server',
   'history.range': '{from}–{to} of {total}',
   'history.empty': 'No sign-in activity yet',
 

@@ -13,7 +13,7 @@ export interface AdminUser {
   createdAt: string
 }
 
-export type LoginReason = 'ok' | 'invalid' | 'locked' | 'inactive' | 'rate_limited'
+export type LoginReason = 'ok' | 'invalid' | 'locked' | 'inactive' | 'rate_limited' | 'cli_reset'
 
 export interface LoginEvent {
   id: number
